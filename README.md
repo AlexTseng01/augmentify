@@ -8,7 +8,7 @@ Augmentify is a CLI data augmentation tool used to assist in YOLO model training
 
 1. Open a shell
 2. cd into your preferred directory to install the program
-3. Once in the preferred directory, run: git clone https://github.com/AlexTseng01/Augmentify.git
+3. Once in the preferred directory, run: 'git clone https://github.com/AlexTseng01/Augmentify.git'
 
 
 
