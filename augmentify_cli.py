@@ -4,7 +4,7 @@
 # 3. If you want to include all parameters, refer to {CLI Example 1}.
 
 # CLI Example 1 (Full): 
-# python augmentify_cli.py "C:\path\to\target" action --save_path "C:\path\to\saveFolder" --include_sub True --preview_img "C:\path\to\previewImg.png"
+# python augmentify_cli.py "C:\path\to\target" action --save_path "C:\path\to\saveFolder" --include_sub True
 
 # CLI Example 2 (Partial):
 # python augmentify_cli.py "C:\path\to\target" action --include_sub True
@@ -20,7 +20,6 @@ import cv2
 TARGET_PATH = None
 SAVE_PATH = None
 INCLUDE_SUB = False
-PREVIEW_IMG = None
 
 def h_flip():
     global SAVE_PATH
@@ -178,9 +177,6 @@ def v_flip():
                         f.writelines(new_lines)
                     print(f"Flipped label saved to {output_label_path}")
 
-def filter():
-    None
-
 def rotate():
     None
 
@@ -188,9 +184,6 @@ def scale():
     None
 
 def shift():
-    None
-
-def pad():
     None
 
 # Gives all image files a corresponding empty label file, 
@@ -230,31 +223,22 @@ def str_to_bool(s):
         return s
     return s.lower() in ("true", "1", "yes")
 
-def main(target, action, save, include_sub, preview_img):
-    global TARGET_PATH, SAVE_PATH, INCLUDE_SUB, REPLACE_FILES, PREVIEW_IMG
+def main(target, action, save, include_sub):
+    global TARGET_PATH, SAVE_PATH, INCLUDE_SUB, REPLACE_FILES
     TARGET_PATH = target
     SAVE_PATH = save
     INCLUDE_SUB = include_sub
-    PREVIEW_IMG = preview_img
-    # print("TARGET_PATH =",TARGET_PATH)
-    # print("SAVE_PATH =", SAVE_PATH)
-    # print("INCLUDE_SUB =", INCLUDE_SUB)
-    # print("PREVIEW_IMG =", PREVIEW_IMG)
 
     if action == "h_flip":
         h_flip()
     elif action == "v_flip":
         v_flip()
-    elif action == "filter":
-        filter()
     elif action == "rotate":
         rotate()
     elif action == "scale":
         scale()
     elif action == "shift":
         shift()
-    elif action == "pad":
-        pad()
     elif action == "add_empty_labels":
         add_empty_labels()
     else:
@@ -268,5 +252,5 @@ if __name__ == "__main__":
     parser.add_argument("--include_sub", type=str_to_bool, default=False, help="Include subfolders?")
     parser.add_argument("--preview_img", default=None, help="Path to preview image")
     args = parser.parse_args()
-    main(args.target_path, args.action, args.save_path, args.include_sub, args.preview_img)
+    main(args.target_path, args.action, args.save_path, args.include_sub)
 

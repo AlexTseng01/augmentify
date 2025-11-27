@@ -4,7 +4,7 @@ Augmentify is a CLI data augmentation tool used to assist in YOLO model training
 
 #### **How to install (Windows 11)**
 
-
+First, ensure you have the necessary libraries: pip install albumentations opencv-python
 
 1. Open a shell
 2. cd into your preferred directory to install the program
