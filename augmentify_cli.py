@@ -35,23 +35,36 @@ def pad_img():
     None
 
 # Gives all image files a corresponding empty label file, 
-# this is mostly useful when training YOLO on negative datasets
 def add_empty_labels():
-    all_files = os.listdir(TARGET_PATH)
-    existing_txts = {os.path.splitext(f)[0] for f in all_files if f.lower().endswith(".txt")}
-
     print()
-    for item in all_files:
-        path = os.path.join(TARGET_PATH, item)
-        # Needs additional control structure for if the user wants to process all subdirectories
-        if os.path.isfile(path) and item.lower().endswith((".png", ".jpg", ".jpeg")):
-            img_name = os.path.splitext(item)[0]
-            if img_name not in existing_txts:
-                txt_path = os.path.join(TARGET_PATH, img_name + ".txt")
-                with open(txt_path, "w") as f:
-                    pass
-                print(f"Created empty label for {item}")
-
+    if INCLUDE_SUB:
+        for dirpath, dirnames, filenames in os.walk(TARGET_PATH):
+            all_files = os.listdir(dirpath)
+            existing_txts = {os.path.splitext(f)[0] for f in all_files if f.lower().endswith(".txt")}
+            for file in filenames:
+                if file.lower().endswith((".png", ".jpg", ".jpeg")):
+                    img_name = os.path.splitext(file)[0]
+                    if img_name not in existing_txts:
+                        # Creating empty labels
+                        label_path = os.path.join(dirpath, img_name + ".txt")
+                        with open (label_path, "w") as f:
+                            pass
+                        file_path = os.path.join(dirpath, file)
+                        print(f"Created label file for: {file_path}") # Debug output
+    else:
+        all_files = os.listdir(TARGET_PATH)
+        existing_txts = {os.path.splitext(f)[0] for f in all_files if f.lower().endswith(".txt")}
+        for filename in os.listdir(TARGET_PATH):
+            file_path = os.path.join(TARGET_PATH, filename)
+            if os.path.isfile(file_path) and filename.lower().endswith((".png", ".jpg", ".jpeg")):
+                img_name = os.path.splitext(filename)[0]
+                if img_name not in existing_txts:
+                    # Creating empty labels
+                    label_path = os.path.join(TARGET_PATH, img_name + ".txt")
+                    with open (label_path, "w") as f:
+                        pass
+                    print(f"Created label file for: {file_path}") # Debug output
+                            
 # Helper function, ignore
 def str_to_bool(s):
     if isinstance(s, bool):
