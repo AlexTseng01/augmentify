@@ -16,19 +16,15 @@ import argparse
 import albumentations as A
 import os
 import cv2
+import sys
 
 TARGET_PATH = None
 SAVE_PATH = None
 INCLUDE_SUB = False
 
+# Flips image horizontally
 def h_flip():
-    global SAVE_PATH
-
     transform = A.Compose([A.HorizontalFlip(p=1)])
-
-    if not SAVE_PATH or SAVE_PATH.strip() == "" or not os.path.exists(SAVE_PATH):
-        SAVE_PATH = os.path.join(TARGET_PATH, "augmented_images")
-    os.makedirs(SAVE_PATH, exist_ok=True)
 
     if INCLUDE_SUB:
         for dirpath, dirname, filenames in os.walk(TARGET_PATH):
@@ -41,7 +37,7 @@ def h_flip():
                     file_path = os.path.join(dirpath, file)
                     image = cv2.imread(file_path)
                     flipped_img = transform(image=image)["image"]
-                    output_image_path = os.path.join(SAVE_PATH, img_name + "_h_flip.png")
+                    output_image_path = os.path.join(SAVE_PATH, img_name + ".png")
                     cv2.imwrite(output_image_path, flipped_img)
                     print(f"Flipped image saved to {output_image_path}")
 
@@ -60,7 +56,7 @@ def h_flip():
                             h = float(h)
                             new_lines.append(f"{cls} {x_center:.6f} {y_center:.6f} {w:.6f} {h:.6f}\n")
 
-                        output_label_path = os.path.join(SAVE_PATH, img_name + "_h_flip.txt")
+                        output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
                         with open(output_label_path, "w") as f:
                             f.writelines(new_lines)
                         print(f"Flipped label saved to {output_label_path}")
@@ -75,7 +71,7 @@ def h_flip():
                 file_path = os.path.join(TARGET_PATH, file)
                 image = cv2.imread(file_path)
                 flipped_img = transform(image=image)["image"]
-                output_image_path = os.path.join(SAVE_PATH, img_name + "_h_flip.png")
+                output_image_path = os.path.join(SAVE_PATH, img_name + ".png")
                 cv2.imwrite(output_image_path, flipped_img)
                 print(f"Horizontally flipped image saved to {output_image_path}")
 
@@ -94,19 +90,14 @@ def h_flip():
                         h = float(h)
                         new_lines.append(f"{cls} {x_center:.6f} {y_center:.6f} {w:.6f} {h:.6f}\n")
 
-                    output_label_path = os.path.join(SAVE_PATH, img_name + "_h_flip.txt")
+                    output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
                     with open(output_label_path, "w") as f:
                         f.writelines(new_lines)
                     print(f"Horizontally flipped label saved to {output_label_path}")
 
+# Flips image vertically
 def v_flip():
-    global SAVE_PATH
-
     transform = A.Compose([A.VerticalFlip(p=1)])
-
-    if not SAVE_PATH or SAVE_PATH.strip() == "" or not os.path.exists(SAVE_PATH):
-        SAVE_PATH = os.path.join(TARGET_PATH, "augmented_images")
-    os.makedirs(SAVE_PATH, exist_ok=True)
 
     if INCLUDE_SUB:
         for dirpath, dirname, filenames in os.walk(TARGET_PATH):
@@ -119,7 +110,7 @@ def v_flip():
                     file_path = os.path.join(dirpath, file)
                     image = cv2.imread(file_path)
                     flipped_img = transform(image=image)["image"]
-                    output_image_path = os.path.join(SAVE_PATH, img_name + "_v_flip.png")
+                    output_image_path = os.path.join(SAVE_PATH, img_name + ".png")
                     cv2.imwrite(output_image_path, flipped_img)
                     print(f"Vertically flipped image saved to {output_image_path}")
 
@@ -138,7 +129,7 @@ def v_flip():
                             h = float(h)
                             new_lines.append(f"{cls} {x_center:.6f} {y_center:.6f} {w:.6f} {h:.6f}\n")
                         
-                        output_label_path = os.path.join(SAVE_PATH, img_name + "_v_flip.txt")
+                        output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
                         with open(output_label_path, "w") as f:
                             f.writelines(new_lines)
                         print(f"Vertically flipped label saved to {output_label_path}")
@@ -153,7 +144,7 @@ def v_flip():
                 file_path = os.path.join(TARGET_PATH, file)
                 image = cv2.imread(file_path)
                 flipped_img = transform(image=image)["image"]
-                output_image_path = os.path.join(SAVE_PATH, img_name + "_v_flip.png")
+                output_image_path = os.path.join(SAVE_PATH, img_name + ".png")
                 cv2.imwrite(output_image_path, flipped_img)
                 print(f"Flipped image saved to {os.path.join(output_image_path)}")
 
@@ -172,18 +163,41 @@ def v_flip():
                         h = float(h)
                         new_lines.append(f"{cls} {x_center:.6f} {y_center:.6f} {w:.6f} {h:.6f}\n")
 
-                    output_label_path = os.path.join(SAVE_PATH, img_name + "_v_flip.txt")
+                    output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
                     with open(output_label_path, "w") as f:
                         f.writelines(new_lines)
                     print(f"Flipped label saved to {output_label_path}")
 
+# Rotate image by some degree value
 def rotate():
     None
 
+# Zoom image by some multiplier value
 def scale():
     None
 
+# Shifts by some x-axis or y-axis value
 def shift():
+    None
+
+# Adjust brightness values
+def brightness():
+    None
+
+# Adjust contrast values
+def contrast():
+    None
+
+# Adjust saturation values
+def saturation():
+    None
+
+# Turns the image black and white
+def grayscale():
+    None
+
+# Invert colors of the image
+def invert():
     None
 
 # Gives all image files a corresponding empty label file, 
@@ -223,34 +237,45 @@ def str_to_bool(s):
         return s
     return s.lower() in ("true", "1", "yes")
 
-def main(target, action, save, include_sub):
-    global TARGET_PATH, SAVE_PATH, INCLUDE_SUB, REPLACE_FILES
+def main(target, actions, save, include_sub):
+    global TARGET_PATH, SAVE_PATH, INCLUDE_SUB
     TARGET_PATH = target
     SAVE_PATH = save
     INCLUDE_SUB = include_sub
 
-    if action == "h_flip":
-        h_flip()
-    elif action == "v_flip":
-        v_flip()
-    elif action == "rotate":
-        rotate()
-    elif action == "scale":
-        scale()
-    elif action == "shift":
-        shift()
-    elif action == "add_empty_labels":
-        add_empty_labels()
-    else:
-        print("Error: Invalid action call.")
+    # If SAVE_PATH does not exist, create a new folder inside TARGET_PATH, otherwise, save it into SAVE_PATH
+    if not SAVE_PATH or SAVE_PATH.strip() == "" or not os.path.exists(SAVE_PATH):
+        SAVE_PATH = os.path.join(TARGET_PATH, "augmented_images")
+    os.makedirs(SAVE_PATH, exist_ok=True)
+
+    # List of actions the user can perform in sequence
+    ACTION_MAP = {
+        "h_flip": h_flip,
+        "v_flip": v_flip,
+        "rotate": rotate,
+        "scale": scale,
+        "shift": shift,
+        "add_empty_labels": add_empty_labels
+    }
+
+    # Args validation
+    for action in actions:
+        if action not in ACTION_MAP:
+            print(f"Error: '{action}' is not an action.")
+            sys.exit(1)
+    
+    # Exec actions
+    for action in actions:
+        print(f"Applying {action} to dataset.")
+        ACTION_MAP[action]()
+        TARGET_PATH = SAVE_PATH
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Augmentify")
     parser.add_argument("target_path", help="Path to target folder")
-    parser.add_argument("action", help="Specify action to perform")
+    parser.add_argument("action", nargs="*", help="Action(s) to perform")
     parser.add_argument("--save_path", default=None, help="Path to save folder")
-    parser.add_argument("--include_sub", type=str_to_bool, default=False, help="Include subfolders?")
-    parser.add_argument("--preview_img", default=None, help="Path to preview image")
+    parser.add_argument("--include_sub", type=str_to_bool, default=False, help="Include subdirectories")
     args = parser.parse_args()
     main(args.target_path, args.action, args.save_path, args.include_sub)
 
