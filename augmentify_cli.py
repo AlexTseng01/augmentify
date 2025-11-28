@@ -25,146 +25,76 @@ SAVE_PATH = None
 INCLUDE_SUB = False
 
 # Flips image horizontally
-def h_flip():
+def h_flip(file_path, existing_txts):
     transform = A.Compose([A.HorizontalFlip(p=1)])
+    dirpath = os.path.dirname(file_path)
+    file = os.path.basename(file_path)
+    img_name = os.path.splitext(file)[0]
 
-    if INCLUDE_SUB:
-        for dirpath, dirname, filenames in os.walk(TARGET_PATH):
-            existing_txts = {os.path.splitext(f)[0] for f in filenames if f.lower().endswith(".txt")}
-            for file in filenames:
-                if file.lower().endswith((".png", ".jpg", ".jpeg")):
-                    print(f"Applying horizontal flip to {os.path.join(dirpath, file)}")
-                    img_name = os.path.splitext(file)[0]
+    print(f"Applying horizontal flip to {os.path.join(dirpath, file)}\n")
 
-                    # Flip image
-                    file_path = os.path.join(dirpath, file)
-                    image = cv2.imread(file_path)
-                    flipped_img = transform(image=image)["image"]
-                    output_image_path = os.path.join(SAVE_PATH, img_name + ".png")
-                    cv2.imwrite(output_image_path, flipped_img)
+    # Flip image
+    image = cv2.imread(file_path)
+    flipped_img = transform(image=image)["image"]
+    output_image_path = os.path.join(SAVE_PATH, img_name + ".png")
+    cv2.imwrite(output_image_path, flipped_img)
 
-                    # Flip corresponding label if it exists
-                    if img_name in existing_txts:
-                        label_path = os.path.join(dirpath, img_name + ".txt")
-                        with open(label_path, "r") as f:
-                            lines = f.readlines()
+    # Flip corresponding label if it exists
+    if img_name in existing_txts:
+        label_path = os.path.join(dirpath, img_name + ".txt")
 
-                        new_lines = []
-                        for line in lines:
-                            cls, x_center, y_center, w, h = line.strip().split()
-                            x_center = 1 - float(x_center)  # horizontal flip
-                            y_center = float(y_center)
-                            w = float(w)
-                            h = float(h)
-                            new_lines.append(f"{cls} {x_center:.6f} {y_center:.6f} {w:.6f} {h:.6f}\n")
+        with open(label_path, "r") as f:
+            lines = f.readlines()
 
-                        output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
-                        with open(output_label_path, "w") as f:
-                            f.writelines(new_lines)
-    else:
-        all_files = os.listdir(TARGET_PATH)
-        existing_txts = {os.path.splitext(f)[0] for f in all_files if f.lower().endswith(".txt")}
-        for file in all_files:
-            if file.lower().endswith((".png", ".jpg", ".jpeg")):
-                print(f"Applying horizontal flip to {os.path.join(TARGET_PATH, file)}")
-                img_name = os.path.splitext(file)[0]
+        new_lines = []
+        for line in lines:
+            cls, x_center, y_center, w, h = line.strip().split()
+            x_center = 1 - float(x_center)  # horizontal flip
+            y_center = float(y_center)
+            w = float(w)
+            h = float(h)
+            new_lines.append(f"{cls} {x_center:.6f} {y_center:.6f} {w:.6f} {h:.6f}\n")
 
-                # Flip image
-                file_path = os.path.join(TARGET_PATH, file)
-                image = cv2.imread(file_path)
-                flipped_img = transform(image=image)["image"]
-                output_image_path = os.path.join(SAVE_PATH, img_name + ".png")
-                cv2.imwrite(output_image_path, flipped_img)
-
-                # Flip corresponding label if it exists
-                if img_name in existing_txts:
-                    label_path = os.path.join(TARGET_PATH, img_name + ".txt")
-                    with open(label_path, "r") as f:
-                        lines = f.readlines()
-
-                    new_lines = []
-                    for line in lines:
-                        cls, x_center, y_center, w, h = line.strip().split()
-                        x_center = 1 - float(x_center)  # horizontal flip
-                        y_center = float(y_center)
-                        w = float(w)
-                        h = float(h)
-                        new_lines.append(f"{cls} {x_center:.6f} {y_center:.6f} {w:.6f} {h:.6f}\n")
-
-                    output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
-                    with open(output_label_path, "w") as f:
-                        f.writelines(new_lines)
+        # Writing to SAVE_PATH
+        output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
+        with open(output_label_path, "w") as f:
+            f.writelines(new_lines)
 
 # Flips image vertically
-def v_flip():
+def v_flip(file_path, existing_txts):
     transform = A.Compose([A.VerticalFlip(p=1)])
+    dirpath = os.path.dirname(file_path)
+    file = os.path.basename(file_path)
+    img_name = os.path.splitext(file)[0]
 
-    if INCLUDE_SUB:
-        for dirpath, dirname, filenames in os.walk(TARGET_PATH):
-            existing_txts = {os.path.splitext(f)[0] for f in filenames if f.lower().endswith(".txt")}
-            for file in filenames:
-                if file.lower().endswith((".png", ".jpg", ".jpeg")):
-                    print(f"Applying vertical flip to {os.path.join(dirpath, file)}")
-                    img_name = os.path.splitext(file)[0]
+    print(f"Applying vertical flip to {os.path.join(dirpath, file)}\n")
 
-                    # Flip image
-                    file_path = os.path.join(dirpath, file)
-                    image = cv2.imread(file_path)
-                    flipped_img = transform(image=image)["image"]
-                    output_image_path = os.path.join(SAVE_PATH, img_name + ".png")
-                    cv2.imwrite(output_image_path, flipped_img)
+    # Flip image
+    image = cv2.imread(file_path)
+    flipped_img = transform(image=image)["image"]
+    output_image_path = os.path.join(SAVE_PATH, img_name + ".png")
+    cv2.imwrite(output_image_path, flipped_img)
 
-                    # Flip corresponding label if it exists
-                    if img_name in existing_txts:
-                        label_path = os.path.join(dirpath, img_name + ".txt")
-                        with open(label_path, "r") as f:
-                            lines = f.readlines()
+    # Flip corresponding label if it exists
+    if img_name in existing_txts:
+        label_path = os.path.join(dirpath, img_name + ".txt")
 
-                        new_lines = []
-                        for line in lines:
-                            cls, x_center, y_center, w, h = line.strip().split()
-                            x_center = float(x_center)        # horizontal position stays the same
-                            y_center = 1 - float(y_center)    # vertical flip
-                            w = float(w)
-                            h = float(h)
-                            new_lines.append(f"{cls} {x_center:.6f} {y_center:.6f} {w:.6f} {h:.6f}\n")
-                        
-                        output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
-                        with open(output_label_path, "w") as f:
-                            f.writelines(new_lines)
-    else:
-        all_files = os.listdir(TARGET_PATH)
-        existing_txts = {os.path.splitext(f)[0] for f in all_files if f.lower().endswith(".txt")}
-        for file in all_files:
-            if file.lower().endswith((".png", ".jpg", ".jpeg")):
-                print(f"Applying vertical flip to {os.path.join(TARGET_PATH, file)}")
-                img_name = os.path.splitext(file)[0]
+        with open(label_path, "r") as f:
+            lines = f.readlines()
 
-                # Flip image
-                file_path = os.path.join(TARGET_PATH, file)
-                image = cv2.imread(file_path)
-                flipped_img = transform(image=image)["image"]
-                output_image_path = os.path.join(SAVE_PATH, img_name + ".png")
-                cv2.imwrite(output_image_path, flipped_img)
+        new_lines = []
+        for line in lines:
+            cls, x_center, y_center, w, h = line.strip().split()
+            x_center = float(x_center)        # horizontal position stays the same
+            y_center = 1 - float(y_center)    # vertical flip
+            w = float(w)
+            h = float(h)
+            new_lines.append(f"{cls} {x_center:.6f} {y_center:.6f} {w:.6f} {h:.6f}\n")
 
-                # Flip corresponding label if it exists
-                if img_name in existing_txts:
-                    label_path = os.path.join(TARGET_PATH, img_name + ".txt")
-                    with open(label_path, "r") as f:
-                        lines = f.readlines()
-
-                    new_lines = []
-                    for line in lines:
-                        cls, x_center, y_center, w, h = line.strip().split()
-                        x_center = float(x_center)        # horizontal stays the same
-                        y_center = 1 - float(y_center)    # vertical flip
-                        w = float(w)
-                        h = float(h)
-                        new_lines.append(f"{cls} {x_center:.6f} {y_center:.6f} {w:.6f} {h:.6f}\n")
-
-                    output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
-                    with open(output_label_path, "w") as f:
-                        f.writelines(new_lines)
+        # Writing to SAVE_PATH
+        output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
+        with open(output_label_path, "w") as f:
+            f.writelines(new_lines)
 
 # Rotate image by some degree value
 def rotate():
@@ -179,148 +109,94 @@ def shift():
     None
 
 # Adjust brightness values
-def brightness():
-    if INCLUDE_SUB:
-        for dirpath, dirname, filenames in os.walk(TARGET_PATH):
-            existing_txts = {os.path.splitext(f)[0] for f in filenames if f.lower().endswith(".txt")}
-            for file in filenames:
-                if file.lower().endswith((".png", ".jpg", ".jpeg")):
-                    print(f"Applying brightness settings to {os.path.join(dirpath, file)}")
-                    img_name = os.path.splitext(file)[0]
+def brightness(file_path, existing_txts):
+    dirpath = os.path.dirname(file_path)
+    file = os.path.basename(file_path)
+    img_name = os.path.splitext(file)[0]
 
-                    # Editing images
-                    img = cv2.imread(os.path.join(dirpath, file))
-                    bright_img = cv2.convertScaleAbs(img, alpha=1.0, beta=50)
-                    output_image_path = os.path.join(SAVE_PATH, file)
-                    cv2.imwrite(output_image_path, bright_img)
+    print(f"Applying brightness settings to {os.path.join(dirpath, file)}\n")
 
-                    # Copying labels
-                    label_path = os.path.join(dirpath, img_name + ".txt")
-                    output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
-                    if os.path.exists(label_path):
-                        shutil.copy(label_path, output_label_path)
-                    else:
-                        open(output_label_path, "w").close()
-    else:
-        all_files = os.listdir(TARGET_PATH)
-        for file in all_files:
-            if file.lower().endswith((".png", ".jpg", ".jpeg")):
-                print(f"Applying brightness settings to {os.path.join(TARGET_PATH, file)}")
-                img_name = os.path.splitext(file)[0]
+    # Editing images
+    img = cv2.imread(file_path)
+    bright_img = cv2.convertScaleAbs(img, alpha=1.0, beta=50)
+    output_image_path = os.path.join(SAVE_PATH, file)
+    cv2.imwrite(output_image_path, bright_img)
 
-                # Editing images
-                img = cv2.imread(os.path.join(TARGET_PATH, file))
-                bright_img = cv2.convertScaleAbs(img, alpha=1.0, beta=50)
-                output_image_path = os.path.join(SAVE_PATH, file)
-                cv2.imwrite(output_image_path, bright_img)
+    # Copying labels
+    label_path = os.path.join(dirpath, img_name + ".txt")
+    output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
 
-                # Copying labels
-                label_path = os.path.join(TARGET_PATH, img_name + ".txt")
-                output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
-                if os.path.exists(label_path):
-                    shutil.copy(label_path, output_label_path)
-                else:
-                    open(output_label_path, "w").close()
+    # Writing to SAVE_PATH
+    if os.path.exists(output_label_path):
+        return
+
+    original_label_path = os.path.join(os.path.dirname(file_path), img_name + ".txt")
+    if os.path.exists(original_label_path):
+        shutil.copy(original_label_path, output_label_path)
 
 # Adjust contrast values
-def contrast():
-    if INCLUDE_SUB:
-        for dirpath, dirname, filenames in os.walk(TARGET_PATH):
-            existing_txts = {os.path.splitext(f)[0] for f in filenames if f.lower().endswith(".txt")}
-            for file in filenames:
-                if file.lower().endswith((".png", ".jpg", ".jpeg")):
-                    print(f"Applying contrast settings to {os.path.join(dirpath, file)}")
-                    img_name = os.path.splitext(file)[0]
+def contrast(file_path, existing_txts):
+    dirpath = os.path.dirname(file_path)
+    file = os.path.basename(file_path)
+    img_name = os.path.splitext(file)[0]
+    
+    print(f"Applying contrast settings to {os.path.join(TARGET_PATH, file)}\n")
 
-                    # Editing images
-                    img = cv2.imread(os.path.join(dirpath, file))
-                    contrast_img = cv2.convertScaleAbs(img, alpha=1.5, beta=50)
-                    output_image_path = os.path.join(SAVE_PATH, file)
-                    cv2.imwrite(output_image_path, contrast_img)
+    # Editing images
+    img = cv2.imread(os.path.join(dirpath, file))
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    saturation_factor = 1.5
+    h, s, v = cv2.split(hsv)
+    s = np.clip(s.astype(np.float32) * saturation_factor, 0, 255).astype(np.uint8)
+    hsv_adjusted = cv2.merge([h, s, v])
 
-                    # Copying labels
-                    label_path = os.path.join(dirpath, img_name + ".txt")
-                    output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
-                    if os.path.exists(label_path):
-                        shutil.copy(label_path, output_label_path)
-                    else:
-                        open(output_label_path, "w").close()
-    else:
-        all_files = os.listdir(TARGET_PATH)
-        for file in all_files:
-            if file.lower().endswith((".png", ".jpg", ".jpeg")):
-                print(f"Applying contrast settings to {os.path.join(TARGET_PATH, file)}")
-                img_name = os.path.splitext(file)[0]
+    saturated_img = cv2.cvtColor(hsv_adjusted, cv2.COLOR_HSV2BGR)
+    output_image_path = os.path.join(SAVE_PATH, file)
+    cv2.imwrite(output_image_path, saturated_img)
 
-                # Editing images
-                img = cv2.imread(os.path.join(dirpath, file))
-                hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-                saturation_factor = 1.5
-                h, s, v = cv2.split(hsv)
-                s = np.clip(s.astype(np.float32) * saturation_factor, 0, 255).astype(np.uint8)
-                hsv_adjusted = cv2.merge([h, s, v])
+    # Copying labels
+    label_path = os.path.join(TARGET_PATH, img_name + ".txt")
+    output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
+    
+    # Writing to SAVE_PATH
+    if os.path.exists(output_label_path):
+        return
 
-                saturated_img = cv2.cvtColor(hsv_adjusted, cv2.COLOR_HSV2BGR)
-                output_image_path = os.path.join(SAVE_PATH, file)
-                cv2.imwrite(output_image_path, saturated_img)
-
-                # Copying labels
-                label_path = os.path.join(TARGET_PATH, img_name + ".txt")
-                output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
-                if os.path.exists(label_path):
-                    shutil.copy(label_path, output_label_path)
-                else:
-                    open(output_label_path, "w").close()
+    original_label_path = os.path.join(os.path.dirname(file_path), img_name + ".txt")
+    if os.path.exists(original_label_path):
+        shutil.copy(original_label_path, output_label_path)
 
 # Adjust saturation values
-def saturation():
-    if INCLUDE_SUB:
-        for dirpath, dirname, filenames in os.walk(TARGET_PATH):
-            existing_txts = {os.path.splitext(f)[0] for f in filenames if f.lower().endswith(".txt")}
-            for file in filenames:
-                if file.lower().endswith((".png", ".jpg", ".jpeg")):
-                    print(f"Applying saturation settings to {os.path.join(dirpath, file)}")
-                    img_name = os.path.splitext(file)[0]
+def saturation(file_path, existing_txts):
+    dirpath = os.path.dirname(file_path)
+    file = os.path.basename(file_path)
+    img_name = os.path.splitext(file)[0]
 
-                    # Editing images
-                    img = cv2.imread(os.path.join(dirpath, file))
-                    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-                    saturation_factor = 1.5
-                    h, s, v = cv2.split(hsv)
-                    s = np.clip(s.astype(np.float32) * saturation_factor, 0, 255).astype(np.uint8)
-                    hsv_adjusted = cv2.merge([h, s, v])
+    print(f"Applying saturation settings to {os.path.join(dirpath, file)}\n")
 
-                    saturated_img = cv2.cvtColor(hsv_adjusted, cv2.COLOR_HSV2BGR)
-                    output_image_path = os.path.join(SAVE_PATH, file)
-                    cv2.imwrite(output_image_path, saturated_img)
+    # Editing images
+    img = cv2.imread(os.path.join(dirpath, file))
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    saturation_factor = 1.5
+    h, s, v = cv2.split(hsv)
+    s = np.clip(s.astype(np.float32) * saturation_factor, 0, 255).astype(np.uint8)
+    hsv_adjusted = cv2.merge([h, s, v])
 
-                    # Copying labels
-                    label_path = os.path.join(dirpath, img_name + ".txt")
-                    output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
-                    if os.path.exists(label_path):
-                        shutil.copy(label_path, output_label_path)
-                    else:
-                        open(output_label_path, "w").close()
-    else:
-        all_files = os.listdir(TARGET_PATH)
-        for file in all_files:
-            if file.lower().endswith((".png", ".jpg", ".jpeg")):
-                print(f"Applying saturation settings to {os.path.join(TARGET_PATH, file)}")
-                img_name = os.path.splitext(file)[0]
+    saturated_img = cv2.cvtColor(hsv_adjusted, cv2.COLOR_HSV2BGR)
+    output_image_path = os.path.join(SAVE_PATH, file)
+    cv2.imwrite(output_image_path, saturated_img)
 
-                # Editing images
-                img = cv2.imread(os.path.join(TARGET_PATH, file))
-                saturated_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-                output_image_path = os.path.join(SAVE_PATH, file)
-                cv2.imwrite(output_image_path, saturated_img)
+    # Copying labels
+    label_path = os.path.join(dirpath, img_name + ".txt")
+    output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
 
-                # Copying labels
-                label_path = os.path.join(TARGET_PATH, img_name + ".txt")
-                output_label_path = os.path.join(SAVE_PATH, img_name + ".txt")
-                if os.path.exists(label_path):
-                    shutil.copy(label_path, output_label_path)
-                else:
-                    open(output_label_path, "w").close()
+    # Writing to SAVE_PATH
+    if os.path.exists(output_label_path):
+        return
+
+    original_label_path = os.path.join(os.path.dirname(file_path), img_name + ".txt")
+    if os.path.exists(original_label_path):
+        shutil.copy(original_label_path, output_label_path)
 
 # Turns the image black and white
 def grayscale():
@@ -331,41 +207,48 @@ def invert():
     None
 
 # Gives all image files a corresponding empty label file, 
-def add_empty_labels():
-    if INCLUDE_SUB:
-        for dirpath, dirnames, filenames in os.walk(TARGET_PATH):
-            existing_txts = {os.path.splitext(f)[0] for f in filenames if f.lower().endswith(".txt")}
-            for file in filenames:
-                if file.lower().endswith((".png", ".jpg", ".jpeg")):
-                    img_name = os.path.splitext(file)[0]
-                    if img_name not in existing_txts:
-                        # Creating empty labels
-                        label_path = os.path.join(dirpath, img_name + ".txt")
-                        with open (label_path, "w") as f:
-                            pass
-                        
-                        file_path = os.path.join(dirpath, file)
-                        print(f"Created label file for: {file_path}") # Debug output
-    else:
-        all_files = os.listdir(TARGET_PATH)
-        existing_txts = {os.path.splitext(f)[0] for f in all_files if f.lower().endswith(".txt")}
-        for filename in os.listdir(TARGET_PATH):
-            file_path = os.path.join(TARGET_PATH, filename)
-            if os.path.isfile(file_path) and filename.lower().endswith((".png", ".jpg", ".jpeg")):
-                img_name = os.path.splitext(filename)[0]
-                if img_name not in existing_txts:
-                    # Creating empty labels
-                    label_path = os.path.join(TARGET_PATH, img_name + ".txt")
-                    with open (label_path, "w") as f:
-                        pass
+def add_empty_labels(file_path, existing_txts):
+    dirpath = os.path.dirname(file_path)
+    file = os.path.basename(file_path)
+    img_name = os.path.splitext(file)[0]
 
-                    print(f"Created label file for: {file_path}") # Debug output
+    if img_name not in existing_txts:
+        # Creating empty labels
+        label_path = os.path.join(dirpath, img_name + ".txt")
+        with open (label_path, "w") as f:
+            pass
+        
+        file_path = os.path.join(dirpath, file)
+        print(f"Created label file for: {file_path}\n")
                             
-# Helper function, ignore
+# Helper functions
 def str_to_bool(s):
     if isinstance(s, bool):
         return s
     return s.lower() in ("true", "1", "yes")
+
+# Helper function that processes the necessary file information before calling the desired action
+def dir_traverse(action):
+    if INCLUDE_SUB:
+        for dirpath, dirname, filenames in os.walk(TARGET_PATH):
+            existing_txts = {os.path.splitext(f)[0] for f in filenames if f.lower().endswith(".txt")}
+            for file in filenames:
+                if file.lower().endswith((".png", ".jpg", ".jpeg")):
+                    full_path = os.path.join(dirpath, file)
+                    print(f"Processing: {full_path}")
+
+                    # Call the specific action
+                    action(full_path, existing_txts)
+    else:
+        all_files = os.listdir(TARGET_PATH)
+        existing_txts = {os.path.splitext(f)[0] for f in all_files if f.lower().endswith(".txt")}
+        for file in all_files:
+            if file.lower().endswith((".png", ".jpg", ".jpeg")):
+                full_path = os.path.join(TARGET_PATH, file)
+                print(f"Processing: {full_path}")
+
+                # Call the specific action
+                action(full_path, existing_txts)
 
 def main(target, actions, save, include_sub):
     global TARGET_PATH, SAVE_PATH, INCLUDE_SUB
@@ -402,7 +285,7 @@ def main(target, actions, save, include_sub):
     # Exec actions
     for action in actions:
         print("---------------------------------------------------------------------------------------------------")
-        ACTION_MAP[action]()
+        dir_traverse(ACTION_MAP[action])
         TARGET_PATH = SAVE_PATH
 
 if __name__ == "__main__":
@@ -413,4 +296,3 @@ if __name__ == "__main__":
     parser.add_argument("--include_sub", type=str_to_bool, default=False, help="Include subdirectories")
     args = parser.parse_args()
     main(args.target_path, args.action, args.save_path, args.include_sub)
-
