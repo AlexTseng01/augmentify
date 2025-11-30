@@ -12,6 +12,9 @@
 # CLI Example 3 (Minimum requirement):
 # python augmentify_cli.py "C:\path\to\target" action
 
+# Known issue:
+# When calling h_flip or v_flip together in any order, it causes corrupted labels
+
 import argparse
 import albumentations as A
 import os
@@ -210,15 +213,34 @@ def str_to_bool(s):
         return s
     return s.lower() in ("true", "1", "yes")
 
+# Creates the save directory with the target directory's/subdirectories files copied into it
+def flat_copy():
+    global TARGET_PATH, SAVE_PATH
+    if not SAVE_PATH or SAVE_PATH.strip() == "" or not os.path.exists(SAVE_PATH):
+        SAVE_PATH = os.path.join(TARGET_PATH, "augmented_images")
+    os.makedirs(SAVE_PATH, exist_ok=True)
+
+    if INCLUDE_SUB:
+        for dirpath, dirnames, filenames in os.walk(TARGET_PATH):
+            for file in filenames:
+                s = os.path.join(dirpath, file)
+                d = os.path.join(SAVE_PATH, file)
+                shutil.copy2(s, d)
+    else:
+        s = os.path.join(TARGET_PATH, file)
+        if os.path.isfile(s):
+            shutil.copy2(s, SAVE_PATH)
+    
+    # Short-handed solution, delete later
+    TARGET_PATH = SAVE_PATH
+
 def main(target, actions, save, include_sub):
     global TARGET_PATH, SAVE_PATH, INCLUDE_SUB
     TARGET_PATH = target
     SAVE_PATH = save
     INCLUDE_SUB = include_sub
 
-    if not SAVE_PATH or SAVE_PATH.strip() == "" or not os.path.exists(SAVE_PATH):
-        SAVE_PATH = os.path.join(TARGET_PATH, "augmented_images")
-    os.makedirs(SAVE_PATH, exist_ok=True)
+    flat_copy()
 
     ACTION_MAP = {
         "h_flip": h_flip,
@@ -261,9 +283,6 @@ def main(target, actions, save, include_sub):
         for t in consumers:
             t.join()
         t_writer.join()
-
-        # Update TARGET_PATH so the next action works on augmented dataset
-        TARGET_PATH = SAVE_PATH
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Augmentify")
