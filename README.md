@@ -1,4 +1,4 @@
-Augmentify is a CLI data augmentation tool used to assist in YOLO model training. Features include: flipping images vertically/horizontally, image filters, rotation, scaling/zooming, translations/shifting, padding, empty labels for negative data, and more in future development.
+Augmentify is a CLI data augmentation tool used to assist in YOLO model training.
 
 
 
@@ -16,7 +16,7 @@ Augmentify is a CLI data augmentation tool used to assist in YOLO model training
 
 
 
-You can now run Augmentify. Make sure to be in the Augmentify directory and enter the virtual environment every time you run this program.
+Before using Augmentify, make sure you are in the Augmentify directory and that the virtual environment is activated. Then you can run the program.
 
 
 
@@ -24,57 +24,79 @@ You can now run Augmentify. Make sure to be in the Augmentify directory and ente
 
 
 
-After you have your terminal session with Augmentify installed and entered your virtual environment, there are several ways you can configure it.
-
-Augmentify requires two mandatory parameters to run; the target folder path that you want to augment, and one action to perform on the entire folder.
+Once you have Augmentify installed and your virtual environment activated in the terminal, you can configure the program in several ways.
 
 
 
-The target folder can be any folder as long as Augmentify has permission to access it.
+Augmentify requires two mandatory parameters to run; the target folder path that you want to augment, and some action(s) to perform on the entire target folder.
 
 
 
-The action can be any one of these listed:
+The target folder can be any folder with your dataset as long as Augmentify has permission to access it.
+
+
+
+The action(s) can be any of these functions listed:
 
 * h\_flip
 * v\_flip
 * rotate
 * scale
 * shift
+* brightness
+* contrast
+* saturation
+* grayscale
+* invert
 * add\_empty\_labels
 
 
 
-There are two *optional* parameters you can include. It is *not* required and will run regardless of it being provided or not:
+**Optional Parameters**
 
-* save\_path accepts a path to a save folder
-* include\_sub is a Boolean, accepting True or False
+| Parameter           | Type      | Description                                        | Example               |
 
+|---------------------|-----------|----------------------------------------------------|-----------------------|
 
+| `--save\_path`       | string    | Directory where output images will be saved.       | `"path/to/folder"`    |
 
-**Examples of configurations**:
+| `--include\_path`    | boolean   | Include the original directory path in metadata.   | `True`                |
 
+| `--rot\_deg`         | float     | Rotation (in degrees) to apply.                    | `-10.5`               |
 
+| `--bright\_mult`     | float     | Brightness multiplier.                             | `2.0`                 |
 
-***python augmentify\_cli.py "C:\\path\\to\\target" v\_flip h\_flip --save\_path "C:\\path\\to\\saveFolder" --include\_sub True --preview\_img***
-
-
-
-The above configuration sets the target folder to 'C:\\path\\to\\target' and perform a vertical flip, followed by a horizontal flip on all of the images and labels in the target folder. The save path is 'C:\\path\\to\\saveFolder', and v\_flip should be ran on all subdirectories.
-
-
-
-***python augmentify\_cli.py "C:\\path\\to\\target" h\_flip***
+| `--contrast\_mult`   | float     | Contrast multiplier.                               | `1.1`                 |
 
 
 
-The above configuration sets the target folder to 'C:\\path\\to\\target' and performs a horizontal flip on all images and labels in the target folder
+**Examples of configurations:**
+
+1. Vertical flip + horizontal flip + brightness + save path + subdirectory
+
+```bash
+
+python augmentify\_cli.py "C:\\path\\to\\target" v\_flip h\_flip brightness --save\_path "C:\\path\\to\\saveFolder" --bright\_mult 2.0 --include\_sub True
+
+```
 
 
 
-***python augmentify\_cli.py "C:\\path\\to\\target" add\_empty\_labels***
+2\. Horizontal flip only
+
+```bash
+
+*python augmentify\_cli.py "C:\\path\\to\\target" h\_flip*
+
+```
 
 
 
-The above configuration sets the target folder to 'C:\\path\\to\\target' and creates an empty label file for each image in the folder
+3\. Add empty labels
+
+```bash
+
+*python augmentify\_cli.py "C:\\path\\to\\target" add\_empty\_labels*
+
+```
 
