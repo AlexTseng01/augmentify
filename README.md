@@ -2,17 +2,17 @@ Augmentify is a CLI data augmentation tool used to assist in YOLO model training
 
 
 
-#### **How to install (Windows 11)**
+#### How to install (Windows 11)
 
 
 
-1. Install Python from '*https://www.python.org/downloads/*' (I recommend version 3.11.8)
+1. Install Python from 'https://www.python.org/downloads/' (I recommend version 3.11.8)
 2. Open a shell session
 3. cd into your preferred directory to install the program
-4. Once in the preferred directory, run: '*git clone https://github.com/AlexTseng01/augmentify.git*'
-5. Create a virtual environment: '*python -m venv venv*'
-6. Enter the virtual environment: '*./venv/Scripts/Activate.ps1'*
-7. Install the dependencies: '*pip install albumentations opencv-python*'
+4. Once in the preferred directory, run: 'git clone https://github.com/AlexTseng01/augmentify.git'
+5. Create a virtual environment: 'python -m venv venv'
+6. Enter the virtual environment: './venv/Scripts/Activate.ps1'
+7. Install the dependencies: 'pip install albumentations opencv-python'
 
 
 
@@ -20,7 +20,7 @@ Before using Augmentify, make sure you are in the Augmentify directory and that 
 
 
 
-#### **How to configure commands**
+#### How to configure commands
 
 
 
@@ -52,7 +52,7 @@ The action(s) can be any of these functions listed:
 
 
 
-**Optional Parameters**
+Optional Parameters
 
 | Parameter           | Type      | Description                                        | Example               |
 
@@ -70,7 +70,7 @@ The action(s) can be any of these functions listed:
 
 
 
-**Examples of configurations:**
+Examples of configurations:
 
 1. Vertical flip + horizontal flip + brightness + save path + subdirectory
 
@@ -86,7 +86,7 @@ python augmentify\_cli.py "C:\\path\\to\\target" v\_flip h\_flip brightness --sa
 
 ```bash
 
-*python augmentify\_cli.py "C:\\path\\to\\target" h\_flip*
+python augmentify\_cli.py "C:\\path\\to\\target" h\_flip
 
 ```
 
@@ -96,7 +96,7 @@ python augmentify\_cli.py "C:\\path\\to\\target" v\_flip h\_flip brightness --sa
 
 ```bash
 
-*python augmentify\_cli.py "C:\\path\\to\\target" add\_empty\_labels*
+python augmentify\_cli.py "C:\\path\\to\\target" add\_empty\_labels
 
 ```
 
