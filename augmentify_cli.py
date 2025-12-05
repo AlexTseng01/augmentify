@@ -24,6 +24,7 @@ import shutil
 import numpy as np
 import threading
 import queue
+from PIL import Image
 
 TARGET_PATH = None
 SAVE_PATH = None
@@ -121,9 +122,43 @@ def v_flip(img, img_name, existing_txts):
                 label_data.append(f"{cls} {x:.6f} {y:.6f} {w:.6f} {h:.6f}\n")
     return flipped_img, label_data
 
-# Rotate image by some degree value
-def rotate():
-    None
+def rotate(img, img_name, existing_txts, angle=-10, border=cv2.BORDER_REPLICATE):
+    h, w = img.shape[:2]
+
+    # Rotation matrix around image center
+    M = cv2.getRotationMatrix2D((w/2, h/2), angle, 1.0)
+
+    # Rotate image
+    rotated_img = cv2.warpAffine(img, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=border)
+
+    label_data = None
+
+    if img_name in existing_txts:
+        label_data = []
+        label_path = os.path.join(TARGET_PATH, img_name + ".txt")
+
+        with open(label_path, "r") as f:
+            for line in f:
+                cls, x, y, bw, bh = line.split()
+                x = float(x) * w
+                y = float(y) * h
+                bw = float(bw)
+                bh = float(bh)
+
+                # Rotate center point
+                new_x = M[0,0]*x + M[0,1]*y + M[0,2]
+                new_y = M[1,0]*x + M[1,1]*y + M[1,2]
+
+                # Normalize center back
+                new_x /= w
+                new_y /= h
+
+                # Width/height are unchanged
+                label_data.append(
+                    f"{cls} {new_x:.6f} {new_y:.6f} {bw:.6f} {bh:.6f}\n"
+                )
+
+    return rotated_img, label_data
 
 # Zoom image by some multiplier value
 def scale():
@@ -227,9 +262,10 @@ def flat_copy():
                 d = os.path.join(SAVE_PATH, file)
                 shutil.copy2(s, d)
     else:
-        s = os.path.join(TARGET_PATH, file)
-        if os.path.isfile(s):
-            shutil.copy2(s, SAVE_PATH)
+        for file in os.listdir(TARGET_PATH):
+            s = os.path.join(TARGET_PATH, file)
+            if os.path.isfile(s):
+                shutil.copy2(s, SAVE_PATH)
     
     # Short-handed solution, delete later
     TARGET_PATH = SAVE_PATH
