@@ -72,7 +72,7 @@ Optional Parameters
 
 Examples of configurations:
 
-1. Vertical flip + horizontal flip + brightness + save path + subdirectory
+\### 1. Vertical flip + horizontal flip + brightness + save path + subdirectory
 
 ```bash
 
@@ -82,7 +82,7 @@ python augmentify\_cli.py "C:\\path\\to\\target" v\_flip h\_flip brightness --sa
 
 
 
-2\. Horizontal flip only
+\### 2. Horizontal flip only
 
 ```bash
 
@@ -92,7 +92,7 @@ python augmentify\_cli.py "C:\\path\\to\\target" h\_flip
 
 
 
-3\. Add empty labels
+\### 3. Add empty labels
 
 ```bash
 
