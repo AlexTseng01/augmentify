@@ -29,6 +29,9 @@ from PIL import Image
 TARGET_PATH = None
 SAVE_PATH = None
 INCLUDE_SUB = False
+ROT_DEG = 0.0
+BRIGHTNESS = 0.0
+CONTRAST = 0.0 # !!!WARNING!!! Anything above 2.0x contrast will probably ruin the dataset
 
 NUM_CONSUMERS = 4
 queue_files = queue.Queue()
@@ -122,14 +125,14 @@ def v_flip(img, img_name, existing_txts):
                 label_data.append(f"{cls} {x:.6f} {y:.6f} {w:.6f} {h:.6f}\n")
     return flipped_img, label_data
 
-def rotate(img, img_name, existing_txts, angle=-10, border=cv2.BORDER_REPLICATE):
+def rotate(img, img_name, existing_txts):
     h, w = img.shape[:2]
 
     # Rotation matrix around image center
-    M = cv2.getRotationMatrix2D((w/2, h/2), angle, 1.0)
+    M = cv2.getRotationMatrix2D((w/2, h/2), ROT_DEG, 1.0)
 
     # Rotate image
-    rotated_img = cv2.warpAffine(img, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=border)
+    rotated_img = cv2.warpAffine(img, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
 
     label_data = None
 
@@ -170,7 +173,8 @@ def shift():
 
 # Adjust brightness values
 def brightness(img, img_name, existing_txts):
-    bright_img = cv2.convertScaleAbs(img, alpha=1.0, beta=50)
+    # Alpha being 1.0 means 1.0x brighter, no change
+    bright_img = cv2.convertScaleAbs(img, alpha=1.0, beta=BRIGHTNESS)
     label_data = None
     if img_name in existing_txts:
         label_path = os.path.join(TARGET_PATH, img_name + ".txt")
@@ -180,11 +184,8 @@ def brightness(img, img_name, existing_txts):
 
 # Adjust contrast values
 def contrast(img, img_name, existing_txts):
-    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-    h, s, v = cv2.split(hsv)
-    s = np.clip(s.astype(np.float32) * 1.5, 0, 255).astype(np.uint8)
-    hsv_adjusted = cv2.merge([h, s, v])
-    contrast_img = cv2.cvtColor(hsv_adjusted, cv2.COLOR_HSV2BGR)
+    # Alpha being 1.0 means 1.0x brighter, no change
+    contrast_img = cv2.convertScaleAbs(img, alpha=CONTRAST, beta=0)
     label_data = None
     if img_name in existing_txts:
         label_path = os.path.join(TARGET_PATH, img_name + ".txt")
@@ -270,11 +271,14 @@ def flat_copy():
     # Short-handed solution, delete later
     TARGET_PATH = SAVE_PATH
 
-def main(target, actions, save, include_sub):
-    global TARGET_PATH, SAVE_PATH, INCLUDE_SUB
+def main(target, actions, save, include_sub, rot_deg, bright_mult, contrast_mult):
+    global TARGET_PATH, SAVE_PATH, INCLUDE_SUB, ROT_DEG, BRIGHTNESS, CONTRAST
     TARGET_PATH = target
     SAVE_PATH = save
     INCLUDE_SUB = include_sub
+    ROT_DEG = rot_deg
+    BRIGHTNESS = bright_mult
+    CONTRAST = contrast_mult
 
     flat_copy()
 
@@ -326,6 +330,9 @@ if __name__ == "__main__":
     parser.add_argument("action", nargs="*", help="Action(s) to perform")
     parser.add_argument("--save_path", default=None, help="Path to save folder")
     parser.add_argument("--include_sub", type=str_to_bool, default=False, help="Include subdirectories")
+    parser.add_argument("--rot_deg", type=float, help="Rotation degree in floating point")
+    parser.add_argument("--bright_mult", type=float, help="Multiplier for brightness level")
+    parser.add_argument("--contrast_mult", type=float, help="Multiplier for contrast level")
     args = parser.parse_args()
-    main(args.target_path, args.action, args.save_path, args.include_sub)
+    main(args.target_path, args.action, args.save_path, args.include_sub, args.rot_deg, args.bright_mult, args.contrast_mult)
     print(f"Augmented dataset saved to: {SAVE_PATH}")
