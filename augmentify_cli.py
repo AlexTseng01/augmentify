@@ -27,9 +27,11 @@ import threading
 import queue
 from PIL import Image
 
+# Default settings
 TARGET_PATH = None
 SAVE_PATH = None
 INCLUDE_SUB = False
+SCALE_FACTOR = 1
 ROT_DEG = 0.0
 BRIGHTNESS = 0.0
 CONTRAST = 0.0 # !!!WARNING!!! Anything above 2.0x contrast will probably ruin the dataset
@@ -64,12 +66,13 @@ def consumer_worker(actions, existing_txts):
 
         img = cv2.imread(file_path)
         img_name = os.path.splitext(os.path.basename(file_path))[0]
+        ext = os.path.splitext(os.path.basename(file_path))[1]
 
         # apply actions in order
         for action in actions:
             img, label_data = action(img, img_name, existing_txts)
 
-        queue_results.put((img_name, img, label_data))
+        queue_results.put((img_name, img, label_data, ext))
         queue_files.task_done()
 
 def writer_worker():
@@ -81,11 +84,14 @@ def writer_worker():
             if stop_count == NUM_CONSUMERS:
                 return
             continue
-        img_name, img, label_data = item
-        cv2.imwrite(os.path.join(SAVE_PATH, img_name + ".png"), img)
+
+        img_name, img, label_data, ext = item  # unpack 4 values
+        cv2.imwrite(os.path.join(SAVE_PATH, img_name + ext), img)  # use original extension
+
         if label_data is not None:
             with open(os.path.join(SAVE_PATH, img_name + ".txt"), "w") as f:
                 f.writelines(label_data)
+
         queue_results.task_done()
 
 # Flips image horizontally
@@ -161,12 +167,50 @@ def rotate(img, img_name, existing_txts):
                 label_data.append(
                     f"{cls} {new_x:.6f} {new_y:.6f} {bw:.6f} {bh:.6f}\n"
                 )
-
+        label_data = clean_labels(label_data, min_size=0.01)
     return rotated_img, label_data
 
 # Zoom image by some multiplier value
-def scale():
-    None
+def scale(img, img_name, existing_txts):
+    h, w = img.shape[:2]
+    new_w, new_h = int(w / SCALE_FACTOR), int(h / SCALE_FACTOR)
+    top = (h - new_h) // 2
+    left = (w - new_w) // 2
+    cropped = img[top:top+new_h, left:left+new_w]
+    scaled_img = cv2.resize(cropped, (w, h), interpolation=cv2.INTER_LINEAR)
+    label_data = None
+
+    # Scale corresponding label if it exists
+    if img_name in existing_txts:
+        label_data = []
+        label_path = os.path.join(TARGET_PATH, img_name + ".txt")
+        with open(label_path, "r") as f:
+            for line in f:
+                cls, x, y, bw, bh = line.split()
+                x_px = float(x) * w
+                y_px = float(y) * h
+                bw_px = float(bw) * w
+                bh_px = float(bh) * h
+
+                # Shift coordinates relative to crop
+                x_px -= left
+                y_px -= top
+
+                # Scale coordinates back to original image size
+                x_px = x_px * (w / new_w)
+                y_px = y_px * (h / new_h)
+                bw_px = bw_px * (w / new_w)
+                bh_px = bh_px * (h / new_h)
+
+                # Normalize back to [0,1]
+                new_x = x_px / w
+                new_y = y_px / h
+                new_bw = bw_px / w
+                new_bh = bh_px / h
+
+                label_data.append(f"{cls} {new_x:.6f} {new_y:.6f} {new_bw:.6f} {new_bh:.6f}\n")
+        label_data = clean_labels(label_data, min_size=0.01)
+    return scaled_img, label_data
 
 # Shifts by some x-axis or y-axis value
 def shift():
@@ -276,11 +320,34 @@ def flat_copy():
     # Short-handed solution, delete later
     TARGET_PATH = SAVE_PATH
 
-def main(target, actions, save, include_sub, rot_deg, bright_mult, contrast_mult):
-    global TARGET_PATH, SAVE_PATH, INCLUDE_SUB, ROT_DEG, BRIGHTNESS, CONTRAST
+def clean_labels(labels, min_size=0.01):
+    cleaned = []
+    for l in labels:
+        parts = l.split()
+        cls, x, y, w, h = float(parts[0]), float(parts[1]), float(parts[2]), float(parts[3]), float(parts[4])
+
+        if w < min_size or h < min_size:
+            continue
+        
+        x_min = x - w / 2
+        x_max = x + w / 2
+        y_min = y - h / 2
+        y_max = y + h / 2
+
+        if x_max < 0 or x_min > 1 or y_max < 0 or y_min > 1:
+            continue
+        
+        # Keep valid boxes
+        cleaned.append(f"{int(cls)} {x:.6f} {y:.6f} {w:.6f} {h:.6f}\n")
+    
+    return cleaned
+
+def main(target, actions, save, include_sub, scale_factor, rot_deg, bright_mult, contrast_mult):
+    global TARGET_PATH, SAVE_PATH, INCLUDE_SUB, SCALE_FACTOR, ROT_DEG, BRIGHTNESS, CONTRAST
     TARGET_PATH = target
     SAVE_PATH = save
     INCLUDE_SUB = include_sub
+    SCALE_FACTOR = scale_factor
     ROT_DEG = rot_deg
     BRIGHTNESS = bright_mult
     CONTRAST = contrast_mult
@@ -335,9 +402,10 @@ if __name__ == "__main__":
     parser.add_argument("action", nargs="*", help="Action(s) to perform")
     parser.add_argument("--save_path", default=None, help="Path to save folder")
     parser.add_argument("--include_sub", type=str_to_bool, default=False, help="Include subdirectories")
+    parser.add_argument("--scale_factor", type=float, help="Scale multiplier")
     parser.add_argument("--rot_deg", type=float, help="Rotation degree in floating point")
     parser.add_argument("--bright_mult", type=float, help="Multiplier for brightness level")
     parser.add_argument("--contrast_mult", type=float, help="Multiplier for contrast level")
     args = parser.parse_args()
-    main(args.target_path, args.action, args.save_path, args.include_sub, args.rot_deg, args.bright_mult, args.contrast_mult)
+    main(args.target_path, args.action, args.save_path, args.include_sub, args.scale_factor, args.rot_deg, args.bright_mult, args.contrast_mult)
     print(f"Augmented dataset saved to: {SAVE_PATH}")
