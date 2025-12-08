@@ -12,8 +12,9 @@
 # CLI Example 3 (Minimum requirement):
 # python augmentify_cli.py "C:\path\to\target" action
 
-# Known issue:
-# When calling h_flip or v_flip together in any order, it causes corrupted labels
+# QOL Update Plan:
+# 1. Option to make all augmentation functions apply separately to the same target folder
+# 2. Renaming augmented files needs to be reworked
 
 import argparse
 import albumentations as A
@@ -259,14 +260,18 @@ def flat_copy():
     if INCLUDE_SUB:
         for dirpath, dirnames, filenames in os.walk(TARGET_PATH):
             for file in filenames:
-                s = os.path.join(dirpath, file)
-                d = os.path.join(SAVE_PATH, file)
+                name, ext = os.path.splitext(file)
+                new_name = f"{name}_AUG{ext}"
+                d = os.path.join(SAVE_PATH, new_name)
                 shutil.copy2(s, d)
     else:
         for file in os.listdir(TARGET_PATH):
             s = os.path.join(TARGET_PATH, file)
             if os.path.isfile(s):
-                shutil.copy2(s, SAVE_PATH)
+                name, ext = os.path.splitext(file)
+                new_name = f"{name}_AUG{ext}"
+                d = os.path.join(SAVE_PATH, new_name)
+                shutil.copy2(s, d)
     
     # Short-handed solution, delete later
     TARGET_PATH = SAVE_PATH
